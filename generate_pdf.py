@@ -1,22 +1,22 @@
-from weasyprint import HTML
+# generate_pdf.py
+import pdfkit
 
-def generate_pdf_for_worker(worker_id, output_path, result_text=None):
-    """
-    Genereert een PDF voor een DIMONA resultaat.
-    Als result_text is meegegeven, wordt die gebruikt.
-    """
-    # Simpele HTML template
-    html_content = f"""
-    <html>
-    <head><meta charset="UTF-8"><title>DIMONA Resultaat</title></head>
-    <body>
-        <h1>DIMONA Resultaat</h1>
-        <p>Werknemer ID: {worker_id}</p>
-        <div>
-            {result_text or 'Resultaat niet beschikbaar'}
-        </div>
-    </body>
-    </html>
-    """
+# Optioneel: geef het pad naar wkhtmltopdf expliciet op
+# Op Windows kun je bijvoorbeeld iets als dit gebruiken:
+# config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+# Als wkhtmltopdf in PATH staat, kun je het config-argument weglaten.
 
-    HTML(string=html_content).write_pdf(output_path)
+def generate_pdf_for_worker(html_content: str, output_filename: str):
+    """
+    Genereert een PDF van de gegeven HTML-content en slaat deze op.
+    
+    :param html_content: De HTML die je wilt omzetten naar PDF
+    :param output_filename: Bestandsnaam van de PDF die wordt aangemaakt
+    """
+    try:
+        pdfkit.from_string(html_content, output_filename)  # , configuration=config)
+        print(f"PDF succesvol aangemaakt: {output_filename}")
+    except Exception as e:
+        print(f"Fout bij genereren PDF: {e}")
+        raise
+
