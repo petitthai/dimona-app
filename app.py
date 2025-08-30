@@ -17,7 +17,7 @@ def fetch_workers():
     workers = []
     for row in reader:
         workers.append({
-            "id": row["INSZ"],  # Rijksregisternummer
+            "id": row["Rijksregisternummer"],  # Rijksregisternummer
             "voornaam": row["Voornaam"],
             "achternaam": row["Achternaam"]
         })
