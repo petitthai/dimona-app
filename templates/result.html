@@ -1,24 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Dimona Registration Result</title>
+    <title>DIMONA Resultaat</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .success { color: green; }
-        .error { color: red; }
-        a { display: block; margin-top: 20px; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .dimona-frame { width: 100%; border: 1px solid #ccc; padding: 10px; }
+        a { display: inline-block; margin-top: 20px; text-decoration: none; color: #007BFF; }
     </style>
 </head>
 <body>
-    <h1>Registration Result</h1>
-
-    {% if success %}
-        <p class="success">{{ message }}</p>
-    {% else %}
-        <p class="error">{{ message }}</p>
-    {% endif %}
-
+    <h1>DIMONA Resultaat</h1>
+    <div class="dimona-frame">
+        {{ dimona_html | safe }}
+    </div>
     <a href="/">Terug naar registratie</a>
 </body>
 </html>
