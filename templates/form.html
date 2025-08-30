@@ -1,41 +1,58 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-    <title>Dimona Formulier</title>
+    <title>Dimona Aangifte</title>
     <style>
-        .tile { display: inline-block; padding: 10px; margin: 5px; border: 1px solid #ccc; cursor: pointer; }
-        .selected { background-color: #8f8; }
+        .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .tile {
+            border: 2px solid #ccc;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            flex: 1 1 150px;
+        }
+        .tile.selected { background: #4caf50; color: white; border-color: #388e3c; }
+        .hidden { display: none; }
     </style>
     <script>
-        function toggleSelection(tile) {
-            tile.classList.toggle("selected");
-            const checkbox = tile.querySelector("input");
-            checkbox.checked = !checkbox.checked;
+        function selectTile(name, value) {
+            document.querySelectorAll("." + name + "-tile").forEach(t => t.classList.remove("selected"));
+            document.getElementById(name + "_input").value = value;
+            document.getElementById(name + "_tile_" + value).classList.add("selected");
+        }
+        function setToday() {
+            const today = "{{ today }}";
+            document.getElementById("date_input").value = today;
         }
     </script>
 </head>
 <body>
-    <h1>Dimona Formulier</h1>
-    <form method="post">
-        <label>Datum: <input type="date" name="date" required></label><br>
-        <label>Starttijd: <input type="time" name="start_time" required></label><br>
-        <label>Eindtijd: <input type="time" name="end_time" required></label><br>
-        <h2>Werknemers</h2>
-        {% for w in workers %}
-        <div class="tile" onclick="toggleSelection(this)">
-            <input type="checkbox" name="worker_id" value="{{ w.id }}" style="display:none;">
-            {{ w.voornaam }} {{ w.achternaam }}
+    <h1>Nieuwe Dimona Aangifte</h1>
+    <form method="POST" action="/submit">
+        <h2>Kies werknemer</h2>
+        <div class="grid">
+            {% for worker in workers %}
+            <div class="tile worker-tile" id="worker_id_tile_{{ worker.id }}" onclick="selectTile('worker_id', '{{ worker.id }}')">
+                {{ worker.name }}
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-        <h2>Maaltijd</h2>
-        <div class="tile" onclick="document.getElementById('meal_lunch').checked=true">Lunch
-            <input type="radio" name="meal" value="Lunch" id="meal_lunch" style="display:none;">
+        <input type="hidden" name="worker_id" id="worker_id_input" required>
+
+        <h2>Kies shift</h2>
+        <div class="grid">
+            <div class="tile shift-tile" id="shift_tile_lunch" onclick="selectTile('shift','lunch')">Lunch (12:00-14:00)</div>
+            <div class="tile shift-tile" id="shift_tile_dinner" onclick="selectTile('shift','dinner')">Dinner (17:30-21:30)</div>
         </div>
-        <div class="tile" onclick="document.getElementById('meal_dinner').checked=true">Dinner
-            <input type="radio" name="meal" value="Dinner" id="meal_dinner" style="display:none;">
-        </div>
+        <input type="hidden" name="shift" id="shift_input" required>
+
+        <h2>Kies datum</h2>
+        <input type="text" name="date" id="date_input" value="{{ today }}" required>
+        <button type="button" onclick="setToday()">Vandaag</button>
+
         <br><br>
-        <button type="submit">Verstuur</button>
+        <button type="submit">Aangifte Verzenden</button>
     </form>
 </body>
 </html>
