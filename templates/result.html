@@ -1,21 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
     <title>Dimona Resultaat</title>
-    <style>
-        iframe {
-            width: 100%;
-            height: 80vh;
-            border: 1px solid #ccc;
-        }
-        .new-btn {
-            margin: 10px 0;
-        }
-    </style>
 </head>
 <body>
-    <h1>Dimona Resultaat</h1>
-    <a class="new-btn" href="{{ url_for('new_submission') }}">Nieuwe aangifte</a>
-    <iframe srcdoc="{{ result_html | safe }}"></iframe>
+    <h1>Resultaat Aangifte</h1>
+    <p>Datum: {{ date }}</p>
+    <p>Starttijd: {{ start_time }}, Eindtijd: {{ end_time }}</p>
+    <p>Maaltijd: {{ meal }}</p>
+    <h2>Geselecteerde Werknemers</h2>
+    <ul>
+        {% for w in workers %}
+        <li>{{ w.voornaam }} {{ w.achternaam }} ({{ w.id }})</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <a href="{{ url_for('form') }}">Nieuwe aangifte</a>
 </body>
 </html>
