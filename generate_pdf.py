@@ -17,7 +17,7 @@ def generate_pdf_for_worker(html_content: str, output_filename: str):
     :param output_filename: Bestandsnaam van de PDF die wordt aangemaakt
     """
     try:
-        pdfkit.from_string(html_content, output_filename) , configuration=config)
+        pdfkit.from_string(html_content, output_filename , configuration=config)
         print(f"PDF succesvol aangemaakt: {output_filename}")
     except Exception as e:
         print(f"Fout bij genereren PDF: {e}")
