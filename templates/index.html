@@ -2,95 +2,65 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>DIMONA App - Selecteer Werknemer</title>
+    <title>DIMONA App</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        .tiles-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .tile {
-            padding: 15px 25px;
-            border: 2px solid #007BFF;
-            border-radius: 12px;
+        .worker-tile {
+            display: inline-block;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px;
             cursor: pointer;
-            transition: all 0.2s;
             text-align: center;
-            min-width: 150px;
+            border-radius: 5px;
+            transition: background 0.2s;
         }
-        .tile:hover {
-            background-color: #007BFF;
-            color: #fff;
+        .worker-tile.selected {
+            background-color: #d0f0c0;
         }
-        .tile.selected {
-            background-color: #0056b3;
-            color: #fff;
-            border-color: #0056b3;
-        }
-        .shift-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 25px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        input[type="hidden"] {
-            display: none;
+        .shift-option {
+            margin: 10px;
         }
     </style>
 </head>
 <body>
     <h1>DIMONA App</h1>
-    <form action="{{ url_for('submit') }}" method="POST" id="dimonaForm">
-        <div class="tiles-container">
-            {% for emp in employees %}
-            <div class="tile" data-worker-id="{{ emp.worker_id }}">{{ emp.name }}</div>
+    <form method="POST" action="/submit" id="dimonaForm">
+        <div id="workers-container">
+            {% for worker in workers %}
+            <div class="worker-tile" data-id="{{ worker.id }}">
+                <h3>{{ worker.voornaam }} {{ worker.achternaam }}</h3>
+            </div>
             {% endfor %}
         </div>
-        <input type="hidden" name="worker_id" id="worker_id">
-        
-        <div class="shift-container">
+
+        <div class="shift-option">
             <label><input type="radio" name="shift_type" value="lunch" checked> Lunch</label>
             <label><input type="radio" name="shift_type" value="dinner"> Dinner</label>
         </div>
-        
-        <div style="text-align:center;">
-            <button type="submit">Verstuur DIMONA</button>
-        </div>
+
+        <input type="hidden" name="selected_worker" id="selected_worker">
+        <button type="submit">Verstuur DIMONA</button>
     </form>
 
     <script>
-        const tiles = document.querySelectorAll(".tile");
-        const hiddenInput = document.getElementById("worker_id");
+        const tiles = document.querySelectorAll('.worker-tile');
+        const hiddenInput = document.getElementById('selected_worker');
 
         tiles.forEach(tile => {
-            tile.addEventListener("click", () => {
-                tiles.forEach(t => t.classList.remove("selected"));
-                tile.classList.add("selected");
-                hiddenInput.value = tile.dataset.workerId;
+            tile.addEventListener('click', () => {
+                tiles.forEach(t => t.classList.remove('selected'));
+                tile.classList.add('selected');
+                hiddenInput.value = tile.dataset.id;
             });
+        });
+
+        // Optioneel: waarschuwing als geen worker geselecteerd
+        document.getElementById('dimonaForm').addEventListener('submit', (e) => {
+            if (!hiddenInput.value) {
+                e.preventDefault();
+                alert("Selecteer een werknemer!");
+            }
         });
     </script>
 </body>
 </html>
-
-
