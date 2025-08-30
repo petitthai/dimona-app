@@ -1,14 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
-import csv
-import requests
-from io import StringIO
-from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import time
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import requests
+import csv
+from io import StringIO
+from datetime import date, timedelta
 
 app = Flask(__name__)
 
@@ -22,77 +20,60 @@ def fetch_workers():
     workers = []
     for row in reader:
         workers.append({
-            "id": row["Rijksregisternummer"],  # Rijksregisternummer
+            "id": row["Rijksregisternummer"],
             "voornaam": row["Voornaam"],
             "achternaam": row["Achternaam"]
         })
     return workers
 
-@app.route("/", methods=["GET"])
-def index():
-    workers = fetch_workers()
-    yesterday = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
-    return render_template("index.html", workers=workers, yesterday=yesterday)
+def get_workers():
+    return fetch_workers()
 
-@app.route("/submit", methods=["POST"])
+@app.route("/", methods=["GET", "POST"])
 def submit():
-    worker_id = request.form.get("worker_id")
-    shift = request.form.get("shift")
-    start_time = request.form.get("start_time")
-    end_time = request.form.get("end_time")
-    employer_number = request.form.get("employer_number")
-    date_flexi = request.form.get("date_flexi")
+    if request.method == "POST":
+        worker_id = request.form["worker_id"]
+        shift = request.form["shift"]  # lunch of dinner
 
-    if not worker_id or not shift:
-        return "Selecteer een werknemer en een shift.", 400
-
-    # Selenium browser automation
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
-    try:
+        driver = webdriver.Chrome()
         driver.get("https://dimona.socialsecurity.be/dimona/unsecured/")
 
-        time.sleep(0.5)
-        # Stap 1: Ondernemingsnummer
-        driver.find_element(By.ID, "idemployerNumber").send_keys(employer_number)
-        driver.find_element(By.ID, "next").click()
-        time.sleep(2)
+        # Vul bedrijfsnummer
+        driver.find_element(By.ID, "comSelect").send_keys("0766985433")
 
-        # Stap 2: Volgende
-        driver.find_element(By.ID, "next").click()
-        time.sleep(0.5)
+        # Vul datum (gisteren)
+        yesterday = (date.today() - timedelta(days=1)).strftime("%d/%m/%Y")
+        driver.find_element(By.ID, "dateInput").send_keys(yesterday)
 
-        # Stap 3: Rijksregisternummer
-        driver.find_element(By.ID, "idinss").send_keys(worker_id)
-        driver.find_element(By.ID, "next").click()
-        time.sleep(0.5)
+        # Vul tijd
+        if shift == "lunch":
+            driver.find_element(By.ID, "startTime").send_keys("12:00")
+            driver.find_element(By.ID, "endTime").send_keys("14:00")
+        else:
+            driver.find_element(By.ID, "startTime").send_keys("17:30")
+            driver.find_element(By.ID, "endTime").send_keys("21:30")
 
-        # Stap 4: Selecteer Andere en Flexi-Job
-        Select(driver.find_element(By.ID, "comSelect")).select_by_value("XXX")
-        Select(driver.find_element(By.ID, "typeSelect")).select_by_value("FLX")
-        driver.find_element(By.ID, "next").click()
-        time.sleep(0.5)
+        # Vul werknemer
+        driver.find_element(By.ID, "workerSelect").send_keys(worker_id)
 
-        # Stap 5: Flexi dag en tijden
-        driver.find_element(By.ID, "idflexiRadioButtonsOnStep3_D").click()
-        driver.find_element(By.ID, "iddateFlexi").send_keys(date_flexi)
-        driver.find_element(By.ID, "startTime0").send_keys(start_time)
-        driver.find_element(By.ID, "endTime0").send_keys(end_time)
-        driver.find_element(By.ID, "next").click()
-        time.sleep(0.5)
+        # Verzenden
+        driver.find_element(By.ID, "submitBtn").click()
 
-        # Stap 6: Bevestigen
-        driver.find_element(By.ID, "confirm").click()
-        time.sleep(0.5)
+        # Wacht tot resultaatpagina geladen is
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
 
         result_html = driver.page_source
-
-    finally:
         driver.quit()
 
-    return result_html
+        return render_template("result.html", result_html=result_html)
+
+    return render_template("form.html", workers=get_workers())
+
+@app.route("/new")
+def new_submission():
+    return redirect(url_for("submit"))
 
 if __name__ == "__main__":
     app.run(debug=True)
