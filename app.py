@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 import datetime
 import csv
@@ -78,10 +78,14 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         wait.until(EC.presence_of_element_located((By.ID, "idinss"))).send_keys(inss)
         driver.find_element(By.ID, "next").click()
 
-        # Step 4: Relation
+        # Step 4: Relation (Corrected to use Select class)
         print("Step 4: Selecting relation type...")
-        wait.until(EC.presence_of_element_located((By.ID, "comSelect"))).send_keys("Andere")
-        wait.until(EC.presence_of_element_located((By.ID, "typeSelect"))).send_keys("Flexi")
+        select_com = Select(wait.until(EC.presence_of_element_located((By.ID, "comSelect"))))
+        select_com.select_by_value("XXX")  # Selects "Andere"
+
+        select_type = Select(wait.until(EC.presence_of_element_located((By.ID, "typeSelect"))))
+        select_type.select_by_value("FLX")  # Selects "Flexi-Job"
+        
         driver.find_element(By.ID, "next").click()
 
         # Step 5: Period
