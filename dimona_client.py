@@ -1,7 +1,24 @@
+# dimona_client.py
 import requests
-
-DIMONA_URL = "https://dimona.socialsecurity.be/dimona/unsecured/Step4SummaryFormAction.do"
+from config import BASE_URL
 
 def submit_dimona_form(payload):
-    response = requests.post(DIMONA_URL, data=payload)
-    return response.text  # dit kunnen we in result.html tonen
+    """
+    Simulated submission of Dimona form. 
+    In test mode, returns a mock HTML page.
+    """
+    # For real use:
+    # response = requests.post(BASE_URL, data=payload)
+    # return response.text
+
+    # Mock HTML for testing:
+    return f"""
+    <html>
+    <body>
+        <h2>Dimona resultaat voor werknemer {payload['selected_worker']}</h2>
+        <p>Start: {payload['startingDate']} {payload['startingHour']}</p>
+        <p>Einde: {payload['endingDate']} {payload['endingHour']}</p>
+        <p>Employer ID: {payload['employerId']}</p>
+    </body>
+    </html>
+    """
