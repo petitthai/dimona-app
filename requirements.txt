@@ -1,5 +1,4 @@
 Flask>=2.3
 requests>=2.31
 selenium>=4.16
-webdriver-manager>=4.0
-pandas>=2.2
+gunicorn
