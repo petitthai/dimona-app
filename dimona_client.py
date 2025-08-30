@@ -2,6 +2,17 @@
 import requests
 from config import BASE_URL
 
+def build_dimona_payload(worker_id, work_date, start_time, end_time):
+    """
+    Bouwt de payload voor het DIMONA formulier.
+    """
+    return {
+        "selected_worker": worker_id,
+        "work_date": work_date,
+        "start_time": start_time,
+        "end_time": end_time
+    }
+
 def submit_dimona_form(payload):
     """
     Simulated submission of Dimona form. 
