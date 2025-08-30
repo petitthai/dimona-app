@@ -41,11 +41,13 @@ def send_dimona(enterprise_number, inss, date_str, shift):
     start_time, end_time = shift_times.get(shift, (None, None))
     if not start_time: raise ValueError("Invalid shift.")
 
+
     options = webdriver.ChromeOptions()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     driver = webdriver.Chrome(options=options)
+
     wait = WebDriverWait(driver, 10)
 
     try:
