@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dimona Registration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        label { display: block; margin-top: 20px; }
+        select, button { padding: 5px; font-size: 16px; }
+        #result { margin-top: 30px; padding: 15px; border: 1px solid #ccc; display: none; }
+    </style>
+</head>
+<body>
+    <h1>Dimona Registration</h1>
+
+    <label for="employee">Selecteer werknemer:</label>
+    <select id="employee">
+        <option value="">-- Kies werknemer --</option>
+    </select>
+
+    <button id="registerBtn">Register</button>
+
+    <div id="result"></div>
+
+    <script>
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/employees');
+                const employees = await response.json();
+                const select = document.getElementById('employee');
+                employees.forEach(emp => {
+                    const option = document.createElement('option');
+                    option.value = emp.insz;
+                    option.textContent = emp.name;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                document.getElementById('result').textContent = 'Error loading employees: ' + err;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const insz = document.getElementById('employee').value;
+            if (!insz) {
+                alert('Selecteer een werknemer!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Registering...';
+            resultDiv.style.display = 'block';
+
+            try {
+                const res = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ insz })
+                });
+                const data = await res.json();
+                resultDiv.textContent = data.message;
+            } catch (err) {
+                resultDiv.textContent = 'Error during registration: ' + err;
+            }
+        });
+
+        loadEmployees();
+    </script>
+</body>
+</html>
