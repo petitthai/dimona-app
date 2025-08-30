@@ -1,23 +1,4 @@
-<!DOCTYPE html>
-
-<html lang="nl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dimona Aangifte</title>
-<script src="https://www.google.com/search?q=https://cdn.tailwindcss.com"></script>
-<style>
-/* Simple transition for better UX */
-.tile { transition: all 0.2s ease-in-out; }
-.tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.tile.selected { background-color: #10B981; color: white; border-color: #059669; transform: translateY(0); }
-</style>
-<script>
-function selectTile(groupName, value) {
-// Deselect all tiles in the same group
-document.querySelectorAll("." + groupName + "-tile").forEach(tile => tile.classList.remove("selected"));
-
-        // Select the clicked tile
+<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dimona Aangifte</title><script src="https://www.google.com/search?q=https://cdn.tailwindcss.com"></script><style>/* Simple transition for better UX */.tile { transition: all 0.2s ease-in-out; }.tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }.tile.selected { background-color: #10B981; color: white; border-color: #059669; transform: translateY(0); }</style><script>function selectTile(groupName, value) {// Deselect all tiles in the same groupdocument.querySelectorAll("." + groupName + "-tile").forEach(tile => tile.classList.remove("selected"));        // Select the clicked tile
         const selectedTile = document.getElementById(groupName + "_tile_" + value);
         selectedTile.classList.add("selected");
         
@@ -25,14 +6,7 @@ document.querySelectorAll("." + groupName + "-tile").forEach(tile => tile.classL
         document.getElementById(groupName + "_input").value = value;
     }
 </script>
-
-</head>
-<body class="bg-gray-100 font-sans">
-<div class="container mx-auto p-4 md:p-8 max-w-2xl">
-<div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
-<h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Nieuwe Dimona Aangifte</h1>
-
-        <form method="POST" action="/submit" class="space-y-8">
+</head><body class="bg-gray-100 font-sans"><div class="container mx-auto p-4 md:p-8 max-w-2xl"><div class="bg-white rounded-lg shadow-lg p-6 md:p-8"><h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Nieuwe Dimona Aangifte</h1>        <form method="POST" action="/submit" class="space-y-8">
             <!-- Werknemer Selectie -->
             <div>
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">1. Kies een werknemer</h2>
@@ -78,6 +52,4 @@ document.querySelectorAll("." + groupName + "-tile").forEach(tile => tile.classL
         </form>
     </div>
 </div>
-
-</body>
-</html>
+</body></html>
