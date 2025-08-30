@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import datetime
+from selenium.common.exceptions import TimeoutException
 
 app = Flask(__name__, template_folder='templates')
 
@@ -35,7 +36,7 @@ def load_workers():
 
 
 def send_dimona(enterprise_number, inss, date_str, shift):
-    """Automates the Dimona declaration process using Selenium."""
+    """Automates the Dimona declaration and scrapes the result."""
     shift_times = {"lunch": ("12:00", "14:00"), "dinner": ("17:30", "21:30")}
     start_time, end_time = shift_times.get(shift, (None, None))
     if not start_time: raise ValueError("Invalid shift.")
@@ -50,25 +51,17 @@ def send_dimona(enterprise_number, inss, date_str, shift):
     try:
         driver.get("https://dimona.socialsecurity.be/dimona/unsecured/")
 
-        # Step 1: Enterprise number
+        # Step 1-5: Fill out the form as before
         wait.until(EC.presence_of_element_located((By.ID, "idemployerNumber"))).send_keys(enterprise_number)
         driver.find_element(By.ID, "next").click()
-
-        # Step 2: Next
         wait.until(EC.element_to_be_clickable((By.ID, "next"))).click()
-
-        # Step 3: INSS
         wait.until(EC.presence_of_element_located((By.ID, "idinss"))).send_keys(inss)
         driver.find_element(By.ID, "next").click()
-
-        # Step 4: Commission and Type
         wait.until(EC.presence_of_element_located((By.ID, "comSelect")))
         Select(driver.find_element(By.ID, "comSelect")).select_by_value("XXX")
         time.sleep(0.5)
         Select(driver.find_element(By.ID, "typeSelect")).select_by_value("FLX")
         driver.find_element(By.ID, "next").click()
-
-        # Step 5: Date and hours
         wait.until(EC.presence_of_element_located((By.ID, "idflexiRadioButtonsOnStep3_D"))).click()
         time.sleep(0.5)
         driver.find_element(By.ID, "iddateFlexi").send_keys(date_str)
@@ -76,16 +69,22 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         driver.find_element(By.NAME, "endTime0").send_keys(end_time)
         driver.find_element(By.ID, "next").click()
 
-        # Step 6: Confirm and wait for result page
+        # Step 6: Confirm and wait for the result page to load
         wait.until(EC.element_to_be_clickable((By.ID, "confirm"))).click()
-        
-        # **FIXED**: Wait specifically for the result page URL to ensure it has fully loaded.
         wait.until(EC.url_contains("Step4SummaryFormAction"))
-        
-        # Small pause for safety to let final elements render.
-        time.sleep(1) 
-        
-        return driver.page_source
+
+        # **NEW**: Scrape the confirmation details instead of the whole page
+        try:
+            # Wait for the main confirmation box to be present
+            confirmation_box = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "boxInformation")))
+            # Extract all the text from the box
+            confirmation_text = confirmation_box.text
+            return {'status': 'success', 'data': confirmation_text}
+        except TimeoutException:
+            # If we can't find the confirmation box, something went wrong
+            error_details = driver.find_element(By.TAG_NAME, 'body').text
+            return {'status': 'error', 'data': 'Could not find the confirmation details on the result page.', 'details': error_details}
+
     finally:
         driver.quit()
 
@@ -100,7 +99,7 @@ def index():
 
 @app.route("/submit", methods=["POST"])
 def submit():
-    """Handles form submission and displays the result."""
+    """Handles form submission and displays the scraped result."""
     worker_id = request.form.get("worker_id")
     shift = request.form.get("shift")
     date_str = request.form.get("date")
@@ -112,8 +111,9 @@ def submit():
         return "Error: Worker not found.", 400
 
     try:
-        result_html = send_dimona(ENTERPRISE_NUMBER, worker["inss"], date_str, shift)
-        return render_template("result.html", worker=worker, result_html=result_html, date=date_str, shift=shift)
+        # **NEW**: The function now returns a dictionary
+        result_data = send_dimona(ENTERPRISE_NUMBER, worker["inss"], date_str, shift)
+        return render_template("result.html", worker=worker, result_data=result_data, date=date_str, shift=shift)
     except Exception as e:
         print(f"An error occurred during Dimona submission: {e}")
         return f"An error occurred: {e}", 500
