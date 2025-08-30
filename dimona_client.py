@@ -15,21 +15,10 @@ def build_dimona_payload(worker_id, work_date, start_time, end_time):
 
 def submit_dimona_form(payload):
     """
-    Simulated submission of Dimona form. 
-    In test mode, returns a mock HTML page.
+    Stuur de DIMONA gegevens door.
+    Voor test doeleinden geven we hier gewoon een string terug.
     """
-    # For real use:
-    # response = requests.post(BASE_URL, data=payload)
-    # return response.text
-
-    # Mock HTML for testing:
-    return f"""
-    <html>
-    <body>
-        <h2>Dimona resultaat voor werknemer {payload['selected_worker']}</h2>
-        <p>Start: {payload['startingDate']} {payload['startingHour']}</p>
-        <p>Einde: {payload['endingDate']} {payload['endingHour']}</p>
-        <p>Employer ID: {payload['employerId']}</p>
-    </body>
-    </html>
-    """
+    worker = payload.get("selected_worker", "Onbekend")
+    return f"<h2>Dimona resultaat voor werknemer {worker}</h2>" \
+           f"<p>Datum: {payload.get('work_date')}</p>" \
+           f"<p>Van {payload.get('start_time')} tot {payload.get('end_time')}</p>"
