@@ -2,39 +2,36 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>DIMONA App</title>
-    <style>
-        .worker-tile { display:inline-block; margin:10px; padding:10px; border:1px solid #ccc; cursor:pointer; }
-        .selected { background-color:#cef; }
-    </style>
-    <script>
-        function selectWorker(tile, workerId) {
-            document.getElementById('selected_worker').value = workerId;
-            document.querySelectorAll('.worker-tile').forEach(el => el.classList.remove('selected'));
-            tile.classList.add('selected');
-        }
-    </script>
+    <title>Dimona Invoer</title>
 </head>
 <body>
-    <h1>DIMONA App</h1>
-
-    <form action="/submit" method="post">
-        <input type="hidden" id="selected_worker" name="selected_worker">
-
-        <div>
-            {% for worker in workers %}
-            <div class="worker-tile" onclick="selectWorker(this, '{{ worker.id }}')">
-                {{ worker.voornaam }} {{ worker.achternaam }}
-            </div>
+    <h1>Dimona Formulier</h1>
+    <form method="POST" action="/submit">
+        <label for="worker_id">Selecteer worker:</label>
+        <select name="worker_id" id="worker_id" required>
+            {% for w in workers %}
+            <option value="{{ w.id }}">{{ w.voornaam }} {{ w.achternaam }} ({{ w.id }})</option>
             {% endfor %}
-        </div>
+        </select>
+        <br><br>
 
-        <div>
-            <label><input type="radio" name="shift_type" value="lunch" checked> Lunch</label>
-            <label><input type="radio" name="shift_type" value="dinner"> Dinner</label>
-        </div>
+        <label for="employer_number">Ondernemingsnummer:</label>
+        <input type="text" name="employer_number" id="employer_number" required>
+        <br><br>
 
-        <button type="submit">Verstuur DIMONA</button>
+        <label for="date_flexi">Datum Flexi-job (dd/mm/jjjj):</label>
+        <input type="text" name="date_flexi" id="date_flexi" required>
+        <br><br>
+
+        <label for="start_time">Startuur (uu:mm):</label>
+        <input type="text" name="start_time" id="start_time" required>
+        <br><br>
+
+        <label for="end_time">Einduur (uu:mm):</label>
+        <input type="text" name="end_time" id="end_time" required>
+        <br><br>
+
+        <button type="submit">Verzenden</button>
     </form>
 </body>
 </html>
