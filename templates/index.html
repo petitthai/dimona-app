@@ -2,69 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dimona Registration</title>
+    <title>Dimona App</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        label { display: block; margin-top: 20px; }
-        select, button { padding: 5px; font-size: 16px; }
-        #result { margin-top: 30px; padding: 15px; border: 1px solid #ccc; display: none; }
+        .tile-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tile {
+            border: 1px solid #ccc;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .tile:hover {
+            background-color: #f0f0f0;
+            border-color: #888;
+        }
+        .selected {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
     </style>
 </head>
 <body>
-    <h1>Dimona Registration</h1>
+    <h1>Selecteer Werknemer</h1>
+    <div class="tile-container">
+        {% for employee in employees %}
+        <div class="tile" data-worker="{{ employee['Worker ID'] }}">
+            {{ employee['Naam'] }}
+        </div>
+        {% endfor %}
+    </div>
 
-    <label for="employee">Selecteer werknemer:</label>
-    <select id="employee">
-        <option value="">-- Kies werknemer --</option>
-    </select>
-
-    <button id="registerBtn">Register</button>
-
-    <div id="result"></div>
+    <input type="hidden" id="selected_worker" name="selected_worker">
 
     <script>
-        async function loadEmployees() {
-            try {
-                const response = await fetch('/employees');
-                const employees = await response.json();
-                const select = document.getElementById('employee');
-                employees.forEach(emp => {
-                    const option = document.createElement('option');
-                    option.value = emp.insz;
-                    option.textContent = emp.name;
-                    select.appendChild(option);
-                });
-            } catch (err) {
-                document.getElementById('result').textContent = 'Error loading employees: ' + err;
-                document.getElementById('result').style.display = 'block';
-            }
-        }
+        const tiles = document.querySelectorAll(".tile");
+        const hiddenInput = document.getElementById("selected_worker");
 
-        document.getElementById('registerBtn').addEventListener('click', async () => {
-            const insz = document.getElementById('employee').value;
-            if (!insz) {
-                alert('Selecteer een werknemer!');
-                return;
-            }
-
-            const resultDiv = document.getElementById('result');
-            resultDiv.textContent = 'Registering...';
-            resultDiv.style.display = 'block';
-
-            try {
-                const res = await fetch('/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ insz })
-                });
-                const data = await res.json();
-                resultDiv.textContent = data.message;
-            } catch (err) {
-                resultDiv.textContent = 'Error during registration: ' + err;
-            }
+        tiles.forEach(tile => {
+            tile.addEventListener("click", () => {
+                tiles.forEach(t => t.classList.remove("selected"));
+                tile.classList.add("selected");
+                hiddenInput.value = tile.dataset.worker;
+            });
         });
-
-        loadEmployees();
     </script>
 </body>
 </html>
