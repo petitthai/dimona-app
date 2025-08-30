@@ -34,6 +34,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command to run the application when the container starts
-# Gunicorn is a production-ready web server with an increased timeout
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--timeout", "120", "app:app"]
+# Gunicorn is a production-ready web server with an increased timeout and better logging
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--timeout", "120", "--log-level", "info", "--log-file", "-", "app:app"]
 
