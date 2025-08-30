@@ -95,12 +95,18 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         print("Step 5: Filling period details...")
         wait.until(EC.element_to_be_clickable((By.ID, "idflexiRadioButtonsOnStep3_D"))).click()
         
-        # --- KEY CHANGE: Wait for the date input to be visible before filling it ---
-        date_input = wait.until(EC.visibility_of_element_located((By.ID, "iddateFlexi")))
-        date_input.send_keys(date_str)
+        # --- NEW, MORE ROBUST METHOD FOR DATE INPUT ---
+        date_input = wait.until(EC.element_to_be_clickable((By.ID, "iddateFlexi")))
+        date_input.click()  # Click to ensure focus
+        date_input.clear()  # Clear any default value
+        date_input.send_keys(date_str) # Type the date
         
         driver.find_element(By.NAME, "startTime0").send_keys(start_time)
         driver.find_element(By.NAME, "endTime0").send_keys(end_time)
+
+        # Give the website's JS a moment to validate before clicking next
+        time.sleep(1)
+
         driver.find_element(By.ID, "next").click()
 
         # Step 6: Confirmation
