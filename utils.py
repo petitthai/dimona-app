@@ -11,7 +11,7 @@ def parse_time_to_hhmm(time_str):
 
 def build_dimona_payload(worker_id, work_date=None, start_time=None, end_time=None):
     payload = {
-        "worker_id": worker_id,
+        "selected_worker": worker_id,   # <-- dit is nodig voor dimona_client.py
         "work_date": work_date,
         "start_time": start_time,
         "end_time": end_time
