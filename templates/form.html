@@ -1,13 +1,17 @@
-<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dimona Aangifte</title><!-- All Tailwind CSS has been removed. Using simple, reliable internal styles instead. --><style>body { font-family: sans-serif; background-color: #f4f4f4; margin: 20px; }.container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }h1, h2 { color: #333; }.grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }.tile {border: 2px solid #ccc;padding: 15px;border-radius: 10px;text-align: center;cursor: pointer;flex: 1 1 150px;transition: all 0.2s ease-in-out;}.tile:hover { border-color: #777; }.tile.selected { background: #4caf50; color: white; border-color: #388e3c; }input[type="text"] { width: 100%; padding: 8px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ddd; box-sizing: border-box; }button {width: 100%;padding: 12px;background-color: #28a745;color: white;border: none;border-radius: 5px;font-size: 16px;cursor: pointer;}button:hover { background-color: #218838; }</style><script>function selectTile(groupName, value) {// Deselect all other tiles in the same groupdocument.querySelectorAll("." + groupName + "-tile").forEach(tile => tile.classList.remove("selected"));        // Select the clicked tile
-        const tileId = groupName + "_tile_" + value;
-        const selectedTile = document.getElementById(tileId);
-        if(selectedTile) {
-            selectedTile.classList.add("selected");
+<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dimona Aangifte</title><style>body { font-family: sans-serif; background-color: #f4f4f4; margin: 20px; }.container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }h1, h2 { color: #333; }.grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }.tile {border: 2px solid #ccc;padding: 15px;border-radius: 10px;text-align: center;cursor: pointer;flex: 1 1 150px;transition: all 0.2s ease-in-out;}.tile:hover { border-color: #777; }.tile.selected { background: #4caf50; color: white; border-color: #388e3c; }input[type="text"] { width: 100%; padding: 8px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ddd; box-sizing: border-box; }button {width: 100%;padding: 12px;background-color: #28a745;color: white;border: none;border-radius: 5px;font-size: 16px;cursor: pointer;}button:hover { background-color: #218838; }</style><script>function selectTile(groupName, value) {const tileId = groupName + "tile" + value;const clickedTile = document.getElementById(tileId);const inputField = document.getElementById(groupName + "_input");        // Check if the clicked tile is already selected
+        const isAlreadySelected = clickedTile.classList.contains("selected");
+
+        // First, deselect all tiles in the group. This ensures only one can be active.
+        document.querySelectorAll("." + groupName + "-tile").forEach(tile => tile.classList.remove("selected"));
+
+        if (isAlreadySelected) {
+            // If it was already selected, leave it deselected and clear the input value.
+            inputField.value = "";
+        } else {
+            // Otherwise, select the new tile and set the input value.
+            clickedTile.classList.add("selected");
+            inputField.value = value;
         }
-        
-        // Update the hidden input field
-        const inputId = groupName + "_input";
-        document.getElementById(inputId).value = value;
     }
 </script>
 </head><body><div class="container"><h1>Nieuwe Dimona Aangifte</h1><form method="POST" action="/submit"><h2>1. Kies een werknemer</h2><div class="grid">{% for worker in workers %}<div id="worker_id_tile_{{ worker.id }}"class="tile worker_id-tile"onclick="selectTile('worker_id', '{{ worker.id }}')">{{ worker.name }}</div>{% endfor %}</div><input type="hidden" name="worker_id" id="worker_id_input" required>        <h2>2. Kies een shift</h2>
