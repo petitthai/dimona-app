@@ -1,35 +1,48 @@
 from flask import Flask, render_template, request, redirect, url_for
-from dimona_client import submit_dimona_form
-from utils import get_yesterday_formatted, build_dimona_payload
-import csv
 import requests
+import csv
+from io import StringIO
+from datetime import datetime, timedelta
+from dimona_client import submit_dimona_form
+from utils import get_yesterday_formatted, parse_time_to_hhmm, build_dimona_payload
 
 app = Flask(__name__)
 
-EMPLOYEE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJbpHVppuTI8jaWb-kYI_THslQpw_j9LUlzAsXC7-rA6Cur8uV9M524hDVsMYr7T-zjVk0GcQVe8nP/pub?gid=0&single=true&output=csv"
+# CSV URL van de Google Sheet
+CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJbpHVppuTI8jaWb-kYI_THslQpw_j9LUlzAsXC7-rA6Cur8uV9M524hDVsMYr7T-zjVk0GcQVe8nP/pub?gid=0&single=true&output=csv"
 
-def load_employees():
-    response = requests.get(EMPLOYEE_CSV_URL)
+def fetch_employees():
+    response = requests.get(CSV_URL)
     response.raise_for_status()
-    lines = response.text.splitlines()
-    reader = csv.DictReader(lines)
-    return list(reader)
+    csv_text = response.text
+    f = StringIO(csv_text)
+    reader = csv.DictReader(f)
+    employees = []
+    for row in reader:
+        employees.append({
+            "worker_id": row.get("Rijksregisternummer"),
+            "name": f"{row.get('Voornaam')} {row.get('Naam')}"
+        })
+    return employees
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def index():
-    employees = load_employees()
-
-    if request.method == "POST":
-        selected_worker = request.form.get("selected_worker")
-        if not selected_worker:
-            return render_template("index.html", employees=employees, error="Selecteer eerst een werknemer!")
-
-        # Build payload using yesterday
-        date = get_yesterday_formatted()  # format: dd/mm/yyyy
-        payload = build_dimona_payload(worker_id=selected_worker, date=date)
-
-        # Submit form (for test, we can print result)
-        result_html = submit_dimona_form(payload)
-        return render_template("result.html", result=result_html)
-
+    employees = fetch_employees()
     return render_template("index.html", employees=employees)
+
+@app.route("/submit", methods=["POST"])
+def submit():
+    worker_id = request.form.get("worker_id")
+    shift_type = request.form.get("shift_type")  # lunch/dinner
+    # gebruik gisteren voor test
+    work_date = get_yesterday_formatted()
+
+    start_time, end_time = ("12:00", "14:00") if shift_type == "lunch" else ("17:30", "21:30")
+    payload = build_dimona_payload(worker_id, work_date, start_time, end_time)
+    
+    result = submit_dimona_form(payload)
+    return render_template("result.html", result=result)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
