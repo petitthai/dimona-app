@@ -76,9 +76,15 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         driver.find_element(By.NAME, "endTime0").send_keys(end_time)
         driver.find_element(By.ID, "next").click()
 
-        # Step 6: Confirm
+        # Step 6: Confirm and wait for result page
         wait.until(EC.element_to_be_clickable((By.ID, "confirm"))).click()
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        
+        # **FIXED**: Wait specifically for the result page URL to ensure it has fully loaded.
+        wait.until(EC.url_contains("Step4SummaryFormAction"))
+        
+        # Small pause for safety to let final elements render.
+        time.sleep(1) 
+        
         return driver.page_source
     finally:
         driver.quit()
@@ -115,6 +121,4 @@ def submit():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
 
