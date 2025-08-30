@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from dimona_client import submit_dimona_form, build_dimona_payload
 from utils import get_yesterday_formatted
 import requests
 import csv
+import os
 from io import StringIO
 
 app = Flask(__name__)
@@ -44,6 +45,16 @@ def submit():
     payload = build_dimona_payload(selected_worker_id, work_date, start_time, end_time)
     dimona_html = submit_dimona_form(payload)  # HTML van DIMONA terug
     return render_template('result.html', dimona_html=dimona_html)
+
+@app.route('/download_pdf/<worker_id>')
+def download_pdf(worker_id):
+    pdf_path = f"dimona_result_{worker_id}.pdf"
+    
+    # Hier kun je je Playwright/Selenium script aanroepen om de PDF te genereren
+    from generate_pdf import generate_pdf_for_worker  # een aparte functie
+    generate_pdf_for_worker(worker_id, pdf_path)
+    
+    return send_file(pdf_path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
