@@ -8,6 +8,7 @@ import csv
 import requests
 from io import StringIO
 import traceback
+import time
 
 app = Flask(__name__)
 
@@ -59,7 +60,7 @@ def send_dimona(enterprise_number, inss, date_str, shift):
     try:
         print("Starting Selenium driver...")
         driver = webdriver.Chrome(options=options)
-        wait = WebDriverWait(driver, 20)  # Increased wait time
+        wait = WebDriverWait(driver, 20)
         print("Driver started. Navigating to Dimona website...")
 
         driver.get("https://dimona.socialsecurity.be/dimona/unsecured/")
@@ -78,20 +79,26 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         wait.until(EC.presence_of_element_located((By.ID, "idinss"))).send_keys(inss)
         driver.find_element(By.ID, "next").click()
 
-        # Step 4: Relation (Corrected to use Select class)
+        # Step 4: Relation
         print("Step 4: Selecting relation type...")
         select_com = Select(wait.until(EC.presence_of_element_located((By.ID, "comSelect"))))
-        select_com.select_by_value("XXX")  # Selects "Andere"
+        select_com.select_by_value("XXX")
 
         select_type = Select(wait.until(EC.presence_of_element_located((By.ID, "typeSelect"))))
-        select_type.select_by_value("FLX")  # Selects "Flexi-Job"
+        select_type.select_by_value("FLX")
         
+        time.sleep(1) 
+
         driver.find_element(By.ID, "next").click()
 
         # Step 5: Period
         print("Step 5: Filling period details...")
         wait.until(EC.element_to_be_clickable((By.ID, "idflexiRadioButtonsOnStep3_D"))).click()
-        driver.find_element(By.ID, "iddateFlexi").send_keys(date_str)
+        
+        # --- KEY CHANGE: Wait for the date input to be visible before filling it ---
+        date_input = wait.until(EC.visibility_of_element_located((By.ID, "iddateFlexi")))
+        date_input.send_keys(date_str)
+        
         driver.find_element(By.NAME, "startTime0").send_keys(start_time)
         driver.find_element(By.NAME, "endTime0").send_keys(end_time)
         driver.find_element(By.ID, "next").click()
@@ -106,7 +113,7 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         wait.until(EC.url_contains("DimonaResultPage"))
         
         print("Scraping result details...")
-        confirmation_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".row-result")))
+        confirmation_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.row-result p")))
         confirmation_text = confirmation_element.text if confirmation_element else "Confirmation details not found."
         
         print("Submission successful.")
@@ -150,7 +157,6 @@ def submit():
         return "Worker not found", 400
 
     result = send_dimona(ENTERPRISE_NUMBER, worker["inss"], date_str, shift)
-    # The variable passed to the template is now named `result_data` to match the template's expectation.
     return render_template("result.html", worker=worker, result_data=result, shift=shift)
 
 if __name__ == "__main__":
