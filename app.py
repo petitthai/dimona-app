@@ -1,30 +1,19 @@
-from flask import Flask, render_template, request
-from dimona_client import submit_dimona_form
-from utils import get_yesterday_formatted, build_dimona_payload
-import config
+import csv
+import requests
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    result = None
-    date = get_yesterday_formatted()  # always yesterday for testing
-    if request.method == "POST":
-        start_time = request.form.get("start_time", "17:30")  # default dinner
-        end_time = request.form.get("end_time", "21:30")
-        
-        payload = build_dimona_payload(
-            employer_id=config.EMPLOYER_ID,
-            insz=config.WORKER_INSS,
-            date=date,
-            start_time=start_time,
-            end_time=end_time,
-            registration_type="FLX"
-        )
-        
-        result = submit_dimona_form(payload)
-    
-    return render_template("index.html", result=result, date=date)
+EMPLOYEE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJbpHVppuTI8jaWb-kYI_THslQpw_j9LUlzAsXC7-rA6Cur8uV9M524hDVsMYr7T-zjVk0GcQVe8nP/pub?gid=0&single=true&output=csv"
 
-if __name__ == "__main__":
-    app.run(debug=True)
+def load_employees():
+    response = requests.get(EMPLOYEE_CSV_URL)
+    response.raise_for_status()
+    lines = response.text.splitlines()
+    reader = csv.DictReader(lines)
+    return list(reader)
+
+@app.route("/")
+def index():
+    employees = load_employees()
+    return render_template("index.html", employees=employees)
