@@ -4,14 +4,24 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install necessary system packages for Google Chrome
-RUN apt-get update && apt-get install -y wget gnupg
+# Install necessary system packages for Google Chrome and its repository
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg
 
-# Add Google Chrome's official repository and install Chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
+# Add Google's official GPG key
+RUN install -m 0755 -d /etc/apt/keyrings
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google.gpg
+RUN chmod a+r /etc/apt/keyrings/google.gpg
+
+# Add the Chrome repository to Apt sources
+RUN echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/google.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
+  | tee /etc/apt/sources.list.d/google-chrome.list
+
+# Update package list and install Google Chrome
+RUN apt-get update && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container
@@ -26,3 +36,4 @@ COPY . .
 # Command to run the application when the container starts
 # Gunicorn is a production-ready web server
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
+
