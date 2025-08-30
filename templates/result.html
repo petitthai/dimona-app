@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>DIMONA Resultaat</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .dimona-frame { width: 100%; border: 1px solid #ccc; padding: 10px; }
-        a { display: inline-block; margin-top: 20px; text-decoration: none; color: #007BFF; }
-    </style>
 </head>
 <body>
-    <h1>DIMONA Resultaat</h1>
-    <div class="dimona-frame">
-        {{ dimona_html | safe }}
-    </div>
-    <a href="/">Terug naar registratie</a>
+    <h2>Dimona resultaat voor {{ worker_name }}</h2>
+
+    <p>{{ result_text }}</p>
+
+    <a href="{{ url_for('download_pdf', worker_id=worker_id) }}" class="btn">
+        Open PDF
+    </a>
+    <br><br>
+    <a href="{{ url_for('index') }}">Terug naar registratie</a>
 </body>
 </html>
