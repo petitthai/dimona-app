@@ -1,24 +1,21 @@
-# dimona_client.py
 import requests
-from config import BASE_URL
 
-def build_dimona_payload(worker_id, work_date, start_time, end_time):
-    """
-    Bouwt de payload voor het DIMONA formulier.
-    """
-    return {
-        "selected_worker": worker_id,
-        "work_date": work_date,
-        "start_time": start_time,
-        "end_time": end_time
-    }
+DIMONA_URL = "https://dimona.socialsecurity.be/dimona/unsecured/Step4SummaryFormAction.do"
 
 def submit_dimona_form(payload):
-    """
-    Stuur de DIMONA gegevens door.
-    Voor test doeleinden geven we hier gewoon een string terug.
-    """
-    worker = payload.get("selected_worker", "Onbekend")
-    return f"<h2>Dimona resultaat voor werknemer {worker}</h2>" \
-           f"<p>Datum: {payload.get('work_date')}</p>" \
-           f"<p>Van {payload.get('start_time')} tot {payload.get('end_time')}</p>"
+    # Verzend de payload naar DIMONA
+    response = requests.post(DIMONA_URL, data=payload)
+    response.raise_for_status()  # Fout als request niet lukt
+    return response.text
+
+def build_dimona_payload(worker_id, work_date, start_time=None, end_time=None):
+    payload = {
+        "selected_worker": worker_id,
+        "work_date": work_date,  # gisteren
+        "start_time": start_time or "09:00",
+        "end_time": end_time or "17:00",
+        # Voeg hier andere DIMONA verplichte velden toe:
+        "employer_id": "100778056",
+        # ...
+    }
+    return payload
