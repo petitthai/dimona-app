@@ -86,14 +86,10 @@ def send_dimona(enterprise_number, inss, date_str, shift):
 
 @app.route("/")
 def index():
-    """Renders the main form with date options."""
+    """Renders the main form."""
     workers = load_workers()
-    today = datetime.date.today()
-    date_options = {
-        "today": today.strftime("%d/%m/%Y"),
-        "tomorrow": (today + datetime.timedelta(days=1)).strftime("%d/%m/%Y")
-    }
-    return render_template("form.html", workers=workers, date_options=date_options)
+    today = datetime.date.today().strftime("%d/%m/%Y")
+    return render_template("form.html", workers=workers, today=today)
 
 
 @app.route("/submit", methods=["POST"])
@@ -119,4 +115,6 @@ def submit():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
 
