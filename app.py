@@ -48,13 +48,13 @@ def submit():
 
     # Selenium browser automation
     options = webdriver.ChromeOptions()
-    # options.add_argument("--headless")
+    options.add_argument("--headless")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     try:
         driver.get("https://dimona.socialsecurity.be/dimona/unsecured/")
 
-        time.sleep(2)
+        time.sleep(0.5)
         # Stap 1: Ondernemingsnummer
         driver.find_element(By.ID, "idemployerNumber").send_keys(employer_number)
         driver.find_element(By.ID, "next").click()
@@ -62,18 +62,18 @@ def submit():
 
         # Stap 2: Volgende
         driver.find_element(By.ID, "next").click()
-        time.sleep(2)
+        time.sleep(0.5)
 
         # Stap 3: Rijksregisternummer
         driver.find_element(By.ID, "idinss").send_keys(worker_id)
         driver.find_element(By.ID, "next").click()
-        time.sleep(2)
+        time.sleep(0.5)
 
         # Stap 4: Selecteer Andere en Flexi-Job
         Select(driver.find_element(By.ID, "comSelect")).select_by_value("XXX")
         Select(driver.find_element(By.ID, "typeSelect")).select_by_value("FLX")
         driver.find_element(By.ID, "next").click()
-        time.sleep(2)
+        time.sleep(0.5)
 
         # Stap 5: Flexi dag en tijden
         driver.find_element(By.ID, "idflexiRadioButtonsOnStep3_D").click()
@@ -81,11 +81,11 @@ def submit():
         driver.find_element(By.ID, "startTime0").send_keys(start_time)
         driver.find_element(By.ID, "endTime0").send_keys(end_time)
         driver.find_element(By.ID, "next").click()
-        time.sleep(2)
+        time.sleep(0.5)
 
         # Stap 6: Bevestigen
         driver.find_element(By.ID, "confirm").click()
-        time.sleep(2)
+        time.sleep(0.5)
 
         result_html = driver.page_source
 
