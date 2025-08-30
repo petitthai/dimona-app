@@ -94,6 +94,7 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         # Step 5: Period
         print("Step 5: Filling period details...")
         wait.until(EC.element_to_be_clickable((By.ID, "idflexiRadioButtonsOnStep3_D"))).click()
+        time.sleep(2)
         
         # --- NEW, MORE ROBUST METHOD FOR DATE INPUT ---
         date_input = wait.until(EC.element_to_be_clickable((By.ID, "iddateFlexi")))
