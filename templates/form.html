@@ -1,34 +1,48 @@
-<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dimona Aangifte</title><style>body { font-family: sans-serif; background-color: #f4f4f4; margin: 20px; }.container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }h1, h2 { color: #333; }.grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }.tile {border: 2px solid #ccc;padding: 15px;border-radius: 10px;text-align: center;cursor: pointer;flex: 1 1 150px;transition: all 0.2s ease-in-out;}.tile:hover { border-color: #777; }.tile.selected { background: #4caf50; color: white; border-color: #388e3c; }input[type="text"] { width: 100%; padding: 8px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ddd; box-sizing: border-box; }button {width: 100%;padding: 12px;background-color: #28a745;color: white;border: none;border-radius: 5px;font-size: 16px;cursor: pointer;}button:hover { background-color: #218838; }</style><script>function selectTile(groupName, value) {// FIX: Correctly construct the IDs using underscores to match the HTML element IDs.const tileId = groupName + "tile" + value;const inputFieldId = groupName + "_input";        const clickedTile = document.getElementById(tileId);
-        const inputField = document.getElementById(inputFieldId);
-
-        // Check if the tile we just clicked was already selected.
-        const isAlreadySelected = clickedTile.classList.contains("selected");
-
-        // First, deselect all tiles in this group to ensure only one is ever active.
-        document.querySelectorAll("." + groupName + "-tile").forEach(tile => {
-            tile.classList.remove("selected");
-        });
-
-        if (isAlreadySelected) {
-            // If it was already selected, we leave it deselected and clear the hidden input's value.
-            inputField.value = "";
-        } else {
-            // Otherwise, we select the new tile and update the hidden input's value.
-            clickedTile.classList.add("selected");
-            inputField.value = value;
-        }
+<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dimona Aangifte</title><style>body { font-family: sans-serif; background-color: #f4f4f4; margin: 20px; }.container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }h1, h2 { color: #333; }.grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }    /* Hide the actual radio button */
+    input[type="radio"] {
+        display: none;
     }
-</script>
-</head><body><div class="container"><h1>Nieuwe Dimona Aangifte</h1><form method="POST" action="/submit"><h2>1. Kies een werknemer</h2><div class="grid">{% for worker in workers %}<div id="worker_id_tile_{{ worker.id }}"class="tile worker_id-tile"onclick="selectTile('worker_id', '{{ worker.id }}')">{{ worker.name }}</div>{% endfor %}</div><input type="hidden" name="worker_id" id="worker_id_input" required>        <h2>2. Kies een shift</h2>
+
+    /* Style the label to look like a tile */
+    .tile {
+        border: 2px solid #ccc;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        flex: 1 1 150px;
+        transition: all 0.2s ease-in-out;
+    }
+    .tile:hover { border-color: #777; }
+
+    /* When the radio button is checked, style the adjacent label */
+    input[type="radio"]:checked + .tile {
+        background: #4caf50;
+        color: white;
+        border-color: #388e3c;
+    }
+
+    input[type="text"] { width: 100%; padding: 8px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ddd; box-sizing: border-box; }
+    button {
+        width: 100%;
+        padding: 12px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    button:hover { background-color: #218838; }
+</style>
+</head><body><div class="container"><h1>Nieuwe Dimona Aangifte</h1><form method="POST" action="/submit"><h2>1. Kies een werknemer</h2><div class="grid">{% for worker in workers %}<input type="radio" name="worker_id" id="worker_{{ worker.id }}" value="{{ worker.id }}" required><label for="worker_{{ worker.id }}" class="tile">{{ worker.name }}</label>{% endfor %}</div>        <h2>2. Kies een shift</h2>
         <div class="grid">
-            <div id="shift_tile_lunch" class="tile shift-tile" onclick="selectTile('shift', 'lunch')">
-                Lunch (12:00-14:00)
-            </div>
-            <div id="shift_tile_dinner" class="tile shift-tile" onclick="selectTile('shift', 'dinner')">
-                Dinner (17:30-21:30)
-            </div>
+            <input type="radio" name="shift" id="shift_lunch" value="lunch" required>
+            <label for="shift_lunch" class="tile">Lunch (12:00-14:00)</label>
+
+            <input type="radio" name="shift" id="shift_dinner" value="dinner" required>
+            <label for="shift_dinner" class="tile">Dinner (17:30-21:30)</label>
         </div>
-        <input type="hidden" name="shift" id="shift_input" required>
 
         <h2>3. Kies een datum</h2>
         <input type="text" name="date" id="date_input" value="{{ today }}" required>
