@@ -1,6 +1,8 @@
+from flask import Flask, render_template, request, redirect, url_for
+from dimona_client import submit_dimona_form
+from utils import get_yesterday_formatted, build_dimona_payload
 import csv
 import requests
-from flask import Flask, render_template
 
 app = Flask(__name__)
 
@@ -13,7 +15,21 @@ def load_employees():
     reader = csv.DictReader(lines)
     return list(reader)
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
     employees = load_employees()
+
+    if request.method == "POST":
+        selected_worker = request.form.get("selected_worker")
+        if not selected_worker:
+            return render_template("index.html", employees=employees, error="Selecteer eerst een werknemer!")
+
+        # Build payload using yesterday
+        date = get_yesterday_formatted()  # format: dd/mm/yyyy
+        payload = build_dimona_payload(worker_id=selected_worker, date=date)
+
+        # Submit form (for test, we can print result)
+        result_html = submit_dimona_form(payload)
+        return render_template("result.html", result=result_html)
+
     return render_template("index.html", employees=employees)
