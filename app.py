@@ -146,7 +146,7 @@ def submit():
         return "Worker not found", 400
 
     result = send_dimona(ENTERPRISE_NUMBER, worker["inss"], date_str, shift)
-    return render_template("result.html", worker=worker, result=result)
+    return render_template("result.html", worker=worker, result=result, shift=shift)
 
 if __name__ == "__main__":
     app.run(debug=True)
