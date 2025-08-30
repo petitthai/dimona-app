@@ -3,8 +3,9 @@ from dimona_client import submit_dimona_form, build_dimona_payload
 from utils import get_yesterday_formatted
 import requests
 import csv
-import os
 from io import StringIO
+import os
+from generate_pdf import generate_pdf_for_worker  # externe functie voor PDF-generatie
 
 app = Flask(__name__)
 
@@ -18,7 +19,7 @@ def fetch_workers():
     workers = []
     for row in reader:
         workers.append({
-            "id": row["Rijksregisternummer"],  # Rijksregisternummer
+            "id": row["Rijksregisternummer"],
             "voornaam": row["Voornaam"],
             "achternaam": row["Achternaam"]
         })
@@ -32,28 +33,35 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     selected_worker_id = request.form.get('selected_worker')
-    work_date = get_yesterday_formatted()  # altijd gisteren voor test
+    work_date = get_yesterday_formatted()
     shift_type = request.form.get('shift_type')
     
     if shift_type == "lunch":
         start_time = "12:00"
         end_time = "14:00"
-    else:  # dinner
+    else:
         start_time = "17:30"
         end_time = "21:30"
 
     payload = build_dimona_payload(selected_worker_id, work_date, start_time, end_time)
-    dimona_html = submit_dimona_form(payload)  # HTML van DIMONA terug
-    return render_template('result.html', dimona_html=dimona_html)
+    result_text = submit_dimona_form(payload)
+
+    # Haal naam van werknemer voor weergave
+    workers = fetch_workers()
+    worker_name = next((f"{w['voornaam']} {w['achternaam']}" for w in workers if w["id"] == selected_worker_id), "Onbekend")
+
+    return render_template(
+        'result.html',
+        result_text=result_text,
+        worker_name=worker_name,
+        worker_id=selected_worker_id
+    )
 
 @app.route('/download_pdf/<worker_id>')
 def download_pdf(worker_id):
     pdf_path = f"dimona_result_{worker_id}.pdf"
-    
-    # Hier kun je je Playwright/Selenium script aanroepen om de PDF te genereren
-    from generate_pdf import generate_pdf_for_worker  # een aparte functie
+    # PDF genereren
     generate_pdf_for_worker(worker_id, pdf_path)
-    
     return send_file(pdf_path, as_attachment=True)
 
 if __name__ == '__main__':
