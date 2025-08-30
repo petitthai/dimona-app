@@ -1,86 +1,41 @@
-<!DOCTYPE html>
-<html lang="nl">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Dimona Invoer</title>
+    <title>Dimona Formulier</title>
     <style>
-        .tile {
-            display: inline-block;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 10px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        .tile.selected {
-            border-color: #007bff;
-            background-color: #e0f0ff;
-        }
-        .tiles-container {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .submit-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
+        .tile { display: inline-block; padding: 10px; margin: 5px; border: 1px solid #ccc; cursor: pointer; }
+        .selected { background-color: #8f8; }
     </style>
-</head>
-<body>
-    <h1>Dimona Invoer</h1>
-    <form method="POST" action="/submit">
-        <input type="hidden" name="worker_id" id="worker_id">
-        <input type="hidden" name="shift" id="shift">
-        <input type="hidden" name="employer_number" value="0766985433">
-        <input type="hidden" name="date_flexi" value="{{ yesterday }}">
-        <input type="hidden" name="start_time" id="start_time">
-        <input type="hidden" name="end_time" id="end_time">
-
-        <h2>Werknemer</h2>
-        <div class="tiles-container">
-            {% for worker in workers %}
-            <div class="tile" onclick="selectWorker('{{ worker.id }}', this)">
-                {{ worker.voornaam }} {{ worker.achternaam }}
-            </div>
-            {% endfor %}
-        </div>
-
-        <h2>Shift</h2>
-        <div class="tiles-container">
-            <div class="tile" onclick="selectShift('lunch')">Lunch (12:00 - 14:00)</div>
-            <div class="tile" onclick="selectShift('dinner')">Dinner (17:30 - 21:30)</div>
-        </div>
-
-        <button type="submit" class="submit-btn">Versturen</button>
-    </form>
-
     <script>
-        function selectWorker(workerId, elem) {
-            document.getElementById('worker_id').value = workerId;
-            document.querySelectorAll('.tiles-container:first-child .tile').forEach(t => t.classList.remove('selected'));
-            elem.classList.add('selected');
-        }
-
-        function selectShift(shift) {
-            document.getElementById('shift').value = shift;
-
-            let startInput = document.getElementById('start_time');
-            let endInput = document.getElementById('end_time');
-
-            if(shift === 'lunch') {
-                startInput.value = "12:00";
-                endInput.value = "14:00";
-            } else if(shift === 'dinner') {
-                startInput.value = "17:30";
-                endInput.value = "21:30";
-            }
-
-            document.querySelectorAll('.tiles-container:nth-child(3) .tile').forEach(t => t.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
+        function toggleSelection(tile) {
+            tile.classList.toggle("selected");
+            const checkbox = tile.querySelector("input");
+            checkbox.checked = !checkbox.checked;
         }
     </script>
+</head>
+<body>
+    <h1>Dimona Formulier</h1>
+    <form method="post">
+        <label>Datum: <input type="date" name="date" required></label><br>
+        <label>Starttijd: <input type="time" name="start_time" required></label><br>
+        <label>Eindtijd: <input type="time" name="end_time" required></label><br>
+        <h2>Werknemers</h2>
+        {% for w in workers %}
+        <div class="tile" onclick="toggleSelection(this)">
+            <input type="checkbox" name="worker_id" value="{{ w.id }}" style="display:none;">
+            {{ w.voornaam }} {{ w.achternaam }}
+        </div>
+        {% endfor %}
+        <h2>Maaltijd</h2>
+        <div class="tile" onclick="document.getElementById('meal_lunch').checked=true">Lunch
+            <input type="radio" name="meal" value="Lunch" id="meal_lunch" style="display:none;">
+        </div>
+        <div class="tile" onclick="document.getElementById('meal_dinner').checked=true">Dinner
+            <input type="radio" name="meal" value="Dinner" id="meal_dinner" style="display:none;">
+        </div>
+        <br><br>
+        <button type="submit">Verstuur</button>
+    </form>
 </body>
 </html>
