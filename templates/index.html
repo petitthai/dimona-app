@@ -1,54 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-    <title>Dimona App</title>
+    <meta charset="UTF-8">
+    <title>DIMONA App - Selecteer Werknemer</title>
     <style>
-        .employee-tile {
-            display: inline-block;
-            padding: 15px;
-            margin: 10px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            border-radius: 8px;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
             text-align: center;
         }
-        .employee-tile:hover {
-            background-color: #f0f0f0;
+        .tiles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .tile {
+            padding: 15px 25px;
+            border: 2px solid #007BFF;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            min-width: 150px;
+        }
+        .tile:hover {
+            background-color: #007BFF;
+            color: #fff;
+        }
+        .tile.selected {
+            background-color: #0056b3;
+            color: #fff;
+            border-color: #0056b3;
+        }
+        .shift-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 25px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        input[type="hidden"] {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Selecteer Werknemer</h1>
-
-    <div id="employee-tiles">
-        {% for emp in employees %}
-        <div class="employee-tile" data-worker-id="{{ emp.worker_id }}">
-            <strong>{{ emp.name }}</strong><br>
-            {{ emp.position }}
+    <h1>DIMONA App</h1>
+    <form action="{{ url_for('submit') }}" method="POST" id="dimonaForm">
+        <div class="tiles-container">
+            {% for emp in employees %}
+            <div class="tile" data-worker-id="{{ emp.worker_id }}">{{ emp.name }}</div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-
-    <form id="worker-form" method="POST" style="display:none;">
-        <input type="hidden" name="selected_worker" id="selected_worker">
+        <input type="hidden" name="worker_id" id="worker_id">
+        
+        <div class="shift-container">
+            <label><input type="radio" name="shift_type" value="lunch" checked> Lunch</label>
+            <label><input type="radio" name="shift_type" value="dinner"> Dinner</label>
+        </div>
+        
+        <div style="text-align:center;">
+            <button type="submit">Verstuur DIMONA</button>
+        </div>
     </form>
 
-    <h2>Resultaat:</h2>
-    <div id="result">
-        {% if result %}
-            <iframe srcdoc="{{ result|safe }}" width="100%" height="400px"></iframe>
-        {% endif %}
-    </div>
-
     <script>
-        document.querySelectorAll(".employee-tile").forEach(tile => {
+        const tiles = document.querySelectorAll(".tile");
+        const hiddenInput = document.getElementById("worker_id");
+
+        tiles.forEach(tile => {
             tile.addEventListener("click", () => {
-                const workerId = tile.getAttribute("data-worker-id");
-                document.getElementById("selected_worker").value = workerId;
-                document.getElementById("worker-form").submit();
+                tiles.forEach(t => t.classList.remove("selected"));
+                tile.classList.add("selected");
+                hiddenInput.value = tile.dataset.workerId;
             });
         });
     </script>
 </body>
 </html>
+
 
