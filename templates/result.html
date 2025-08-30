@@ -1,26 +1,16 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dimona Resultaat</title>
+    <title>DIMONA Result</title>
 </head>
 <body>
-    <h1>Dimona Resultaat</h1>
-    
-    <!-- Resultaat tonen -->
+    <h1>DIMONA Submission Result</h1>
     <div>
-        {{ result_html|safe }}
+        <!-- Directly embed DIMONA confirmation HTML -->
+        {{ result | safe }}
     </div>
-
-    <!-- PDF download knop -->
-    <div style="margin-top:20px;">
-        <a href="{{ url_for('download_pdf', pdf_file=pdf_file) }}" target="_blank">
-            Download PDF
-        </a>
-    </div>
-
-    <div style="margin-top:20px;">
-        <a href="{{ url_for('index') }}">Terug naar registratie</a>
-    </div>
+    <a href="/">Terug naar registratie</a>
 </body>
 </html>
+
