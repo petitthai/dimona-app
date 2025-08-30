@@ -42,7 +42,7 @@ def submit():
         end_time = "21:30"
 
     payload = build_dimona_payload(selected_worker_id, work_date, start_time, end_time)
-    result = submit_dimona_form(payload)
+    dimona_html = submit_dimona_form(payload)  # HTML van DIMONA terug
     return render_template('result.html', result=result)
 
 if __name__ == '__main__':
