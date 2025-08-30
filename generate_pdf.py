@@ -5,6 +5,9 @@ import pdfkit
 # Op Windows kun je bijvoorbeeld iets als dit gebruiken:
 # config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
 # Als wkhtmltopdf in PATH staat, kun je het config-argument weglaten.
+WKHTMLTOPDF_PATH = r"C:\Users\jeroe\OneDrive\Documents\DimApp\dimona-app\wkhtmltopdf\bin\wkhtmltopdf.exe"
+config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+
 
 def generate_pdf_for_worker(html_content: str, output_filename: str):
     """
