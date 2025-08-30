@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>DIMONA Result</title>
+    <title>Dimona Resultaat</title>
+    <style>
+        iframe {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #ccc;
+        }
+        .new-btn {
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>DIMONA Submission Result</h1>
-    <div>
-        <!-- Directly embed DIMONA confirmation HTML -->
-        {{ result | safe }}
-    </div>
-    <a href="/">Terug naar registratie</a>
+    <h1>Dimona Resultaat</h1>
+    <a class="new-btn" href="{{ url_for('new_submission') }}">Nieuwe aangifte</a>
+    <iframe srcdoc="{{ result_html | safe }}"></iframe>
 </body>
 </html>
-
