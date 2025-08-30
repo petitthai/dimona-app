@@ -2,17 +2,25 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>DIMONA Resultaat</title>
+    <title>Dimona Resultaat</title>
 </head>
 <body>
-    <h2>Dimona resultaat voor {{ worker_name }}</h2>
+    <h1>Dimona Resultaat</h1>
+    
+    <!-- Resultaat tonen -->
+    <div>
+        {{ result_html|safe }}
+    </div>
 
-    <p>{{ result_text }}</p>
+    <!-- PDF download knop -->
+    <div style="margin-top:20px;">
+        <a href="{{ url_for('download_pdf', pdf_file=pdf_file) }}" target="_blank">
+            Download PDF
+        </a>
+    </div>
 
-    <a href="{{ url_for('download_pdf', worker_id=worker_id) }}" class="btn">
-        Open PDF
-    </a>
-    <br><br>
-    <a href="{{ url_for('index') }}">Terug naar registratie</a>
+    <div style="margin-top:20px;">
+        <a href="{{ url_for('index') }}">Terug naar registratie</a>
+    </div>
 </body>
 </html>
