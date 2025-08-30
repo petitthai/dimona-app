@@ -1,58 +1,83 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="nl">
 <head>
-    <title>Dimona Aangifte</title>
-    <style>
-        .grid { display: flex; flex-wrap: wrap; gap: 10px; }
-        .tile {
-            border: 2px solid #ccc;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            flex: 1 1 150px;
-        }
-        .tile.selected { background: #4caf50; color: white; border-color: #388e3c; }
-        .hidden { display: none; }
-    </style>
-    <script>
-        function selectTile(name, value) {
-            document.querySelectorAll("." + name + "-tile").forEach(t => t.classList.remove("selected"));
-            document.getElementById(name + "_input").value = value;
-            document.getElementById(name + "_tile_" + value).classList.add("selected");
-        }
-        function setToday() {
-            const today = "{{ today }}";
-            document.getElementById("date_input").value = today;
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dimona Aangifte</title>
+<script src="https://www.google.com/search?q=https://cdn.tailwindcss.com"></script>
+<style>
+/* Simple transition for better UX */
+.tile { transition: all 0.2s ease-in-out; }
+.tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.tile.selected { background-color: #10B981; color: white; border-color: #059669; transform: translateY(0); }
+</style>
+<script>
+function selectTile(groupName, value) {
+// Deselect all tiles in the same group
+document.querySelectorAll("." + groupName + "-tile").forEach(tile => tile.classList.remove("selected"));
+
+        // Select the clicked tile
+        const selectedTile = document.getElementById(groupName + "_tile_" + value);
+        selectedTile.classList.add("selected");
+        
+        // Update the hidden input value
+        document.getElementById(groupName + "_input").value = value;
+    }
+</script>
+
 </head>
-<body>
-    <h1>Nieuwe Dimona Aangifte</h1>
-    <form method="POST" action="/submit">
-        <h2>Kies werknemer</h2>
-        <div class="grid">
-            {% for worker in workers %}
-            <div class="tile worker-tile" id="worker_id_tile_{{ worker.id }}" onclick="selectTile('worker_id', '{{ worker.id }}')">
-                {{ worker.name }}
+<body class="bg-gray-100 font-sans">
+<div class="container mx-auto p-4 md:p-8 max-w-2xl">
+<div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+<h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Nieuwe Dimona Aangifte</h1>
+
+        <form method="POST" action="/submit" class="space-y-8">
+            <!-- Werknemer Selectie -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">1. Kies een werknemer</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {% for worker in workers %}
+                    <div id="worker_id_tile_{{ worker.id }}" 
+                         class="tile worker_id-tile cursor-pointer rounded-lg border-2 border-gray-300 p-4 text-center font-medium text-gray-700" 
+                         onclick="selectTile('worker_id', '{{ worker.id }}')">
+                        {{ worker.name }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="worker_id" id="worker_id_input" required>
             </div>
-            {% endfor %}
-        </div>
-        <input type="hidden" name="worker_id" id="worker_id_input" required>
 
-        <h2>Kies shift</h2>
-        <div class="grid">
-            <div class="tile shift-tile" id="shift_tile_lunch" onclick="selectTile('shift','lunch')">Lunch (12:00-14:00)</div>
-            <div class="tile shift-tile" id="shift_tile_dinner" onclick="selectTile('shift','dinner')">Dinner (17:30-21:30)</div>
-        </div>
-        <input type="hidden" name="shift" id="shift_input" required>
+            <!-- Shift Selectie -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">2. Kies een shift</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="shift_tile_lunch" class="tile shift-tile cursor-pointer rounded-lg border-2 border-gray-300 p-4 text-center" onclick="selectTile('shift', 'lunch')">
+                        <p class="font-bold">Lunch</p>
+                        <p class="text-sm">12:00 - 14:00</p>
+                    </div>
+                    <div id="shift_tile_dinner" class="tile shift-tile cursor-pointer rounded-lg border-2 border-gray-300 p-4 text-center" onclick="selectTile('shift', 'dinner')">
+                        <p class="font-bold">Dinner</p>
+                        <p class="text-sm">17:30 - 21:30</p>
+                    </div>
+                </div>
+                <input type="hidden" name="shift" id="shift_input" required>
+            </div>
 
-        <h2>Kies datum</h2>
-        <input type="text" name="date" id="date_input" value="{{ today }}" required>
-        <button type="button" onclick="setToday()">Vandaag</button>
+            <!-- Datum Selectie -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">3. Kies een datum</h2>
+                <input type="text" name="date" id="date_input" value="{{ today }}" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+            </div>
 
-        <br><br>
-        <button type="submit">Aangifte Verzenden</button>
-    </form>
+            <!-- Submit Knop -->
+            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition-colors duration-300">
+                Aangifte Verzenden
+            </button>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
