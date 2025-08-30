@@ -1,14 +1,25 @@
-# app.py
-from flask import Flask, render_template
-import config
-from datetime import datetime
+from flask import Flask, render_template, request
+from dimona_client import submit_registration
+from utils import get_yesterday_formatted
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/", methods=["GET", "POST"])
 def index():
-    # Voor test: toon employer ID en huidige datum/tijd
-    return f"Employer ID: {config.EMPLOYER_ID} | Tijd: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    if request.method == "POST":
+        insz = request.form.get("insz")
+        registration_type = request.form.get("registration_type")  # e.g., 'lunch' or 'dinner'
 
-if __name__ == '__main__':
+        # Use yesterday for testing
+        date = get_yesterday_formatted()
+
+        try:
+            result_message = submit_registration(insz=insz, date=date, registration_type=registration_type)
+            return render_template("result.html", success=True, message=result_message)
+        except Exception as e:
+            return render_template("result.html", success=False, message=str(e))
+
+    return render_template("index.html")
+
+if __name__ == "__main__":
     app.run(debug=True)
