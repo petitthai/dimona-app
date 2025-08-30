@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, send_file
 from dimona_client import submit_dimona_form, build_dimona_payload
 from utils import get_yesterday_formatted
+from generate_pdf import generate_pdf_for_worker
 import requests
 import csv
 from io import StringIO
 import os
-from generate_pdf import generate_pdf_for_worker  # externe functie voor PDF-generatie
 
 app = Flask(__name__)
 
@@ -39,34 +39,24 @@ def submit():
     if shift_type == "lunch":
         start_time = "12:00"
         end_time = "14:00"
-    else:
+    else:  # dinner
         start_time = "17:30"
         end_time = "21:30"
 
     payload = build_dimona_payload(selected_worker_id, work_date, start_time, end_time)
-    result_text = submit_dimona_form(payload)
+    result_html = submit_dimona_form(payload)
 
-    # Haal naam van werknemer voor weergave
-    workers = fetch_workers()
-    worker_name = next((f"{w['voornaam']} {w['achternaam']}" for w in workers if w["id"] == selected_worker_id), "Onbekend")
+    # PDF genereren
+    pdf_filename = f"dimona_{selected_worker_id}_{work_date}.pdf"
+    generate_pdf_for_worker(result_html, pdf_filename)
 
-    return render_template(
-        'result.html',
-        result_text=result_text,
-        worker_name=worker_name,
-        worker_id=selected_worker_id
-    )
+    return render_template('result.html', result_html=result_html, pdf_file=pdf_filename)
 
-@app.route('/download_pdf/<worker_id>')
-def download_pdf(worker_id):
-    pdf_path = f"dimona_result_{worker_id}.pdf"
-
-    # Haal result_text op uit een tijdelijke opslag, of genereer opnieuw
-    workers = fetch_workers()
-    result_text = f"DIMONA resultaat voor {worker_id}"  # voorbeeld, kan dynamisch
-
-    generate_pdf_for_worker(worker_id, pdf_path, result_text=result_text)
-    return send_file(pdf_path, as_attachment=True)
+@app.route('/download/<pdf_file>')
+def download_pdf(pdf_file):
+    # Veilig pad construeren
+    safe_path = os.path.abspath(pdf_file)
+    return send_file(safe_path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
