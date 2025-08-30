@@ -3,35 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <title>Dimona Invoer</title>
+    <style>
+        .tile {
+            display: inline-block;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .tile.selected {
+            border-color: #007bff;
+            background-color: #e0f0ff;
+        }
+        .tiles-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .submit-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Dimona Formulier</h1>
+    <h1>Dimona Invoer</h1>
     <form method="POST" action="/submit">
-        <label for="worker_id">Selecteer worker:</label>
-        <select name="worker_id" id="worker_id" required>
-            {% for w in workers %}
-            <option value="{{ w.id }}">{{ w.voornaam }} {{ w.achternaam }} ({{ w.id }})</option>
+        <input type="hidden" name="worker_id" id="worker_id">
+        <input type="hidden" name="shift" id="shift">
+        <input type="hidden" name="employer_number" value="0766985433">
+        <input type="hidden" name="date_flexi" value="{{ yesterday }}">
+        <input type="hidden" name="start_time" id="start_time">
+        <input type="hidden" name="end_time" id="end_time">
+
+        <h2>Werknemer</h2>
+        <div class="tiles-container">
+            {% for worker in workers %}
+            <div class="tile" onclick="selectWorker('{{ worker.id }}', this)">
+                {{ worker.voornaam }} {{ worker.achternaam }}
+            </div>
             {% endfor %}
-        </select>
-        <br><br>
+        </div>
 
-        <label for="employer_number">Ondernemingsnummer:</label>
-        <input type="text" name="employer_number" id="employer_number" required>
-        <br><br>
+        <h2>Shift</h2>
+        <div class="tiles-container">
+            <div class="tile" onclick="selectShift('lunch')">Lunch (12:00 - 14:00)</div>
+            <div class="tile" onclick="selectShift('dinner')">Dinner (17:30 - 21:30)</div>
+        </div>
 
-        <label for="date_flexi">Datum Flexi-job (dd/mm/jjjj):</label>
-        <input type="text" name="date_flexi" id="date_flexi" required>
-        <br><br>
-
-        <label for="start_time">Startuur (uu:mm):</label>
-        <input type="text" name="start_time" id="start_time" required>
-        <br><br>
-
-        <label for="end_time">Einduur (uu:mm):</label>
-        <input type="text" name="end_time" id="end_time" required>
-        <br><br>
-
-        <button type="submit">Verzenden</button>
+        <button type="submit" class="submit-btn">Versturen</button>
     </form>
+
+    <script>
+        function selectWorker(workerId, elem) {
+            document.getElementById('worker_id').value = workerId;
+            document.querySelectorAll('.tiles-container:first-child .tile').forEach(t => t.classList.remove('selected'));
+            elem.classList.add('selected');
+        }
+
+        function selectShift(shift) {
+            document.getElementById('shift').value = shift;
+
+            let startInput = document.getElementById('start_time');
+            let endInput = document.getElementById('end_time');
+
+            if(shift === 'lunch') {
+                startInput.value = "12:00";
+                endInput.value = "14:00";
+            } else if(shift === 'dinner') {
+                startInput.value = "17:30";
+                endInput.value = "21:30";
+            }
+
+            document.querySelectorAll('.tiles-container:nth-child(3) .tile').forEach(t => t.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+    </script>
 </body>
 </html>
