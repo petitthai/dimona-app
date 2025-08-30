@@ -1,11 +1,14 @@
-import time
+from flask import Flask, render_template, request, redirect, url_for
 import csv
-from io import StringIO
 import requests
-from flask import Flask, render_template, request
+from io import StringIO
+from datetime import datetime, timedelta
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+import time
 
 app = Flask(__name__)
 
@@ -28,52 +31,55 @@ def fetch_workers():
 @app.route("/", methods=["GET"])
 def index():
     workers = fetch_workers()
-    return render_template("index.html", workers=workers)
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
+    return render_template("index.html", workers=workers, yesterday=yesterday)
 
 @app.route("/submit", methods=["POST"])
 def submit():
-    selected_worker_id = request.form.get("worker_id")
-    if not selected_worker_id:
-        return "Geen werknemer geselecteerd!", 400
-
-    employer_number = request.form.get("employer_number")
-    date_flexi = request.form.get("date_flexi")
+    worker_id = request.form.get("worker_id")
+    shift = request.form.get("shift")
     start_time = request.form.get("start_time")
     end_time = request.form.get("end_time")
+    employer_number = request.form.get("employer_number")
+    date_flexi = request.form.get("date_flexi")
 
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # kan weggelaten worden om browser te zien
-    driver = webdriver.Chrome(options=chrome_options)
+    if not worker_id or not shift:
+        return "Selecteer een werknemer en een shift.", 400
+
+    # Selenium browser automation
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     try:
-        # Stap 1: Ondernemingsnummer invullen en volgende klikken
-        driver.get("https://dimona.socialsecurity.be/dimona/unsecured/")  # vervang door juiste startpagina
+        driver.get("https://dimona.socialsecurity.be/dimona/unsecured/")
+
         time.sleep(2)
+        # Stap 1: Ondernemingsnummer
         driver.find_element(By.ID, "idemployerNumber").send_keys(employer_number)
         driver.find_element(By.ID, "next").click()
         time.sleep(2)
 
-        # Stap 2: Volgende klikken
+        # Stap 2: Volgende
         driver.find_element(By.ID, "next").click()
         time.sleep(2)
 
-        # Stap 3: Rijksregisternummer invullen
-        driver.find_element(By.ID, "idinss").send_keys(selected_worker_id)
+        # Stap 3: Rijksregisternummer
+        driver.find_element(By.ID, "idinss").send_keys(worker_id)
         driver.find_element(By.ID, "next").click()
         time.sleep(2)
 
-        # Stap 4: Selecteer "Andere" en "FLX"
-        driver.find_element(By.ID, "comSelect").send_keys("XXX")  # Andere
-        driver.find_element(By.ID, "typeSelect").send_keys("FLX")
+        # Stap 4: Selecteer Andere en Flexi-Job
+        Select(driver.find_element(By.ID, "comSelect")).select_by_value("XXX")
+        Select(driver.find_element(By.ID, "typeSelect")).select_by_value("FLX")
         driver.find_element(By.ID, "next").click()
         time.sleep(2)
 
-        # Stap 5: Dag selecteren en tijden invullen
+        # Stap 5: Flexi dag en tijden
         driver.find_element(By.ID, "idflexiRadioButtonsOnStep3_D").click()
-        time.sleep(1)
         driver.find_element(By.ID, "iddateFlexi").send_keys(date_flexi)
-        driver.find_element(By.NAME, "startTime0").send_keys(start_time)
-        driver.find_element(By.NAME, "endTime0").send_keys(end_time)
+        driver.find_element(By.ID, "startTime0").send_keys(start_time)
+        driver.find_element(By.ID, "endTime0").send_keys(end_time)
         driver.find_element(By.ID, "next").click()
         time.sleep(2)
 
@@ -81,12 +87,12 @@ def submit():
         driver.find_element(By.ID, "confirm").click()
         time.sleep(2)
 
-        # Resultaatpagina ophalen
         result_html = driver.page_source
-        return result_html
 
     finally:
         driver.quit()
+
+    return result_html
 
 if __name__ == "__main__":
     app.run(debug=True)
