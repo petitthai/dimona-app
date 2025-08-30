@@ -60,8 +60,12 @@ def submit():
 @app.route('/download_pdf/<worker_id>')
 def download_pdf(worker_id):
     pdf_path = f"dimona_result_{worker_id}.pdf"
-    # PDF genereren
-    generate_pdf_for_worker(worker_id, pdf_path)
+
+    # Haal result_text op uit een tijdelijke opslag, of genereer opnieuw
+    workers = fetch_workers()
+    result_text = f"DIMONA resultaat voor {worker_id}"  # voorbeeld, kan dynamisch
+
+    generate_pdf_for_worker(worker_id, pdf_path, result_text=result_text)
     return send_file(pdf_path, as_attachment=True)
 
 if __name__ == '__main__':
