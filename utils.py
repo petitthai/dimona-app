@@ -9,14 +9,11 @@ def parse_time_to_hhmm(time_str):
     """Convert '17:30' -> '1730'"""
     return time_str.replace(":", "")
 
-def build_dimona_payload(worker_id, start_hour="1700", end_hour="2100"):
-    """Return a payload dictionary for Dimona submission."""
-    date = get_yesterday_formatted()
-    return {
-        "selected_worker": worker_id,
-        "startingDate": date,
-        "startingHour": start_hour,
-        "endingHour": end_hour,
-        "endingDate": date,
-        "employerId": config.EMPLOYER_ID
+def build_dimona_payload(worker_id, work_date=None, start_time=None, end_time=None):
+    payload = {
+        "worker_id": worker_id,
+        "work_date": work_date,
+        "start_time": start_time,
+        "end_time": end_time
     }
+    return payload
