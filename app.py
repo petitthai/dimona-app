@@ -1,11 +1,14 @@
-from flask import Flask, render_template, request, send_file
-from dimona_client import submit_dimona_form, build_dimona_payload
+from flask import Flask, render_template, request
 from utils import get_yesterday_formatted
-from generate_pdf import generate_pdf_for_worker
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 import csv
+import requests
 from io import StringIO
-import os
 
 app = Flask(__name__)
 
@@ -19,7 +22,7 @@ def fetch_workers():
     workers = []
     for row in reader:
         workers.append({
-            "id": row["Rijksregisternummer"],
+            "id": row["Rijksregisternummer"],  # Rijksregisternummer
             "voornaam": row["Voornaam"],
             "achternaam": row["Achternaam"]
         })
@@ -33,7 +36,7 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     selected_worker_id = request.form.get('selected_worker')
-    work_date = get_yesterday_formatted()
+    work_date = get_yesterday_formatted()  # altijd gisteren voor test
     shift_type = request.form.get('shift_type')
     
     if shift_type == "lunch":
@@ -43,20 +46,35 @@ def submit():
         start_time = "17:30"
         end_time = "21:30"
 
-    payload = build_dimona_payload(selected_worker_id, work_date, start_time, end_time)
-    result_html = submit_dimona_form(payload)
+    # --- Start Selenium browser automation ---
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # run in background
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-    # PDF genereren
-    pdf_filename = f"dimona_{selected_worker_id}_{work_date}.pdf"
-    generate_pdf_for_worker(result_html, pdf_filename)
+    try:
+        # Open DIMONA summary page (direct unsecured submission URL)
+        driver.get("https://dimona.socialsecurity.be/dimona/unsecured/Step4SummaryFormAction.do")
 
-    return render_template('result.html', result_html=result_html, pdf_file=pdf_filename)
+        # Wait until page loads (adjust selectors if needed)
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "form")))
 
-@app.route('/download/<pdf_file>')
-def download_pdf(pdf_file):
-    # Veilig pad construeren
-    safe_path = os.path.abspath(pdf_file)
-    return send_file(safe_path, as_attachment=True)
+        # Fill the form fields (example — adjust field names)
+        driver.execute_script(f"document.querySelector('[name=\"employeeId\"]').value = '{selected_worker_id}'")
+        driver.execute_script(f"document.querySelector('[name=\"workDate\"]').value = '{work_date}'")
+        driver.execute_script(f"document.querySelector('[name=\"startTime\"]').value = '{start_time}'")
+        driver.execute_script(f"document.querySelector('[name=\"endTime\"]').value = '{end_time}'")
+
+        # Submit the form
+        driver.find_element(By.CSS_SELECTOR, "form").submit()
+
+        # Wait until confirmation page loads
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        result_html = driver.page_source
+
+    finally:
+        driver.quit()
+
+    return render_template('result.html', result=result_html)
 
 if __name__ == '__main__':
     app.run(debug=True)
