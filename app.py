@@ -117,24 +117,24 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         print("Waiting for final confirmation page...")
         wait.until(EC.staleness_of(confirm_button))
         
-        # --- KEY CHANGE: More resilient scraping for the final result ---
+        # --- KEY CHANGE: Scrape innerHTML to preserve formatting ---
         print("Scraping result details...")
-        confirmation_text = ""
+        confirmation_html = ""
         try:
-            # First, try to find the main content container which is always present
+            # Find the main content container and get its inner HTML
             confirmation_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.content.sendConfirm")))
-            confirmation_text = confirmation_element.text
+            confirmation_html = confirmation_element.get_attribute('innerHTML')
         except TimeoutException:
-            # If it fails, grab all text from the page body as a fallback (likely an error page)
+            # Fallback if the specific element isn't found
             print("Could not find specific result element, grabbing all body text as a fallback.")
             try:
                 body_element = driver.find_element(By.TAG_NAME, 'body')
-                confirmation_text = body_element.text
+                confirmation_html = body_element.text # Fallback to plain text
             except:
-                confirmation_text = "Could not extract any details from the final page."
+                confirmation_html = "Could not extract any details from the final page."
         
         print("Submission successful.")
-        return {"status": "success", "details": confirmation_text}
+        return {"status": "success", "details": confirmation_html}
 
     except Exception as e:
         print("--- AN ERROR OCCURRED ---")
@@ -173,8 +173,8 @@ def submit():
         return "Worker not found", 400
 
     result = send_dimona(ENTERPRISE_NUMBER, worker["inss"], date_str, shift)
-    return render_template("result.html", worker=worker, result_data=result, shift=shift)
+    # --- KEY CHANGE: Pass date_str to the template ---
+    return render_template("result.html", worker=worker, result_data=result, shift=shift, date_str=date_str)
 
 if __name__ == "__main__":
     app.run(debug=True)
-
