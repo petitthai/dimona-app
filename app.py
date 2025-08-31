@@ -94,31 +94,31 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         # Step 5: Period
         print("Step 5: Filling period details...")
         wait.until(EC.element_to_be_clickable((By.ID, "idflexiRadioButtonsOnStep3_D"))).click()
-        time.sleep(2)
         
-        # --- NEW, MORE ROBUST METHOD FOR DATE INPUT ---
-        date_input = wait.until(EC.element_to_be_clickable((By.ID, "iddateFlexi")))
-        date_input.click()  # Click to ensure focus
-        date_input.clear()  # Clear any default value
-        date_input.send_keys(date_str) # Type the date
+        date_input_element = wait.until(EC.visibility_of_element_located((By.ID, "iddateFlexi")))
         
+        driver.execute_script(f"arguments[0].value='{date_str}';", date_input_element)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", date_input_element)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('blur', { bubbles: true }));", date_input_element)
+
         driver.find_element(By.NAME, "startTime0").send_keys(start_time)
         driver.find_element(By.NAME, "endTime0").send_keys(end_time)
 
-        # Give the website's JS a moment to validate before clicking next
-        time.sleep(1)
+        time.sleep(1) 
 
         driver.find_element(By.ID, "next").click()
 
         # Step 6: Confirmation
         print("Step 6: Confirming submission...")
-        # wait.until(EC.url_contains("Step4SummaryFormAction.do"))
-        wait.until(EC.presence_of_element_located((By.ID, "confirm"))).click()
+        # --- KEY CHANGE: Get a reference to the confirm button before clicking it ---
+        confirm_button = wait.until(EC.presence_of_element_located((By.ID, "confirm")))
+        confirm_button.click()
 
-        # Final Result
+        # --- KEY CHANGE: Wait for the page to change by waiting for the old button to disappear ---
         print("Waiting for final confirmation page...")
-        # wait.until(EC.url_contains("DimonaResultPage"))
+        wait.until(EC.staleness_of(confirm_button))
         
+        # Final Result
         print("Scraping result details...")
         confirmation_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.row-result p")))
         confirmation_text = confirmation_element.text if confirmation_element else "Confirmation details not found."
@@ -130,7 +130,6 @@ def send_dimona(enterprise_number, inss, date_str, shift):
         print("--- AN ERROR OCCURRED ---")
         print(str(e))
         traceback.print_exc()
-        # Try to get a screenshot for debugging
         if driver:
             try:
                 driver.save_screenshot('error_screenshot.png')
@@ -168,4 +167,3 @@ def submit():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
