@@ -1,23 +1,23 @@
-<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Resultaat Dimona</title><style>body { font-family: sans-serif; background-color: #f4f4f4; margin: 20px; color: #333; }.container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }h1, h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; }.summary { background-color: #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 20px; }.result-box { padding: 20px; border-radius: 5px; margin-bottom: 20px; }.result-box.success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }.result-box.error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }pre { white-space: pre-wrap; word-wrap: break-word; font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 5px; }a { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }a:hover { background-color: #0056b3; }</style></head><body><div class="container"><h1>Dimona Aangifte Resultaat</h1>    <div class="summary">
+<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Resultaat Dimona</title><style>body {font-family: sans-serif;background-color: #f4f4f4;margin: 20px;color: #333;}.container {max-width: 800px;margin: auto;background: #fff;padding: 20px;border-radius: 8px;box-shadow: 0 2px 5px rgba(0,0,0,0.1);}h1, h2 {border-bottom: 2px solid #eee;padding-bottom: 10px;}.summary {background-color: #e9ecef;padding: 15px;border-radius: 5px;margin-bottom: 20px;}.result-box {padding: 20px;border-radius: 5px;margin-bottom: 20px;}.result-box.success {background-color: #d4edda;border: 1px solid #c3e6cb;color: #155724;}.result-box.error {background-color: #f8d7da;border: 1px solid #f5c6cb;color: #721c24;}a {display: inline-block;margin-top: 20px;padding: 10px 15px;background-color: #007bff;color: white;text-decoration: none;border-radius: 5px;}a:hover {background-color: #0056b3;}/* Stijlen van de Dimona-site voor betere weergave in de iframe-stijl */.dimona-result-content .formBox { border: 1px solid #ccc; margin-bottom: 1em; padding: 1em; border-radius: 5px; background-color: #f9f9f9; }.dimona-result-content .formBox legend { font-weight: bold; }.dimona-result-content .formBox ul { list-style: none; padding: 0; }.dimona-result-content .infoNotification { background-color: #e3f2fd; border-left: 5px solid #2196f3; padding: 1em; margin: 1em 0; }.dimona-result-content .formError { background-color: #ffebee; border-left: 5px solid #f44336; padding: 1em; margin: 1em 0; }</style></head><body><div class="container"><h1>Dimona Aangifte Resultaat</h1>    <div class="summary">
         <h2>Ingediende gegevens</h2>
         <p><strong>Werknemer:</strong> {{ worker.name }}</p>
-        <p><strong>Datum:</strong> {{ date }}</p>
+        <p><strong>Datum:</strong> {{ date_str }}</p>
         <p><strong>Shift:</strong> {{ shift.title() }}</p>
     </div>
 
     {% if result_data and result_data.status == 'success' %}
         <div class="result-box success">
             <h2>Aangifte Succesvol Ontvangen</h2>
-            <pre>{{ result_data.data }}</pre>
+            <div class="dimona-result-content">
+                {{ result_data.details | safe }}
+            </div>
         </div>
     {% else %}
         <div class="result-box error">
             <h2>Er is een fout opgetreden</h2>
-            <p>{{ result_data.data }}</p>
-            {% if result_data.details %}
-                <h3>Technische Details:</h3>
-                <pre>{{ result_data.details }}</pre>
-            {% endif %}
+            <div class="dimona-result-content">
+                {{ result_data.details | safe }}
+            </div>
         </div>
     {% endif %}
 
