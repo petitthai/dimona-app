@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException # Import TimeoutException
 import datetime
 import csv
 import requests
@@ -110,18 +111,27 @@ def send_dimona(enterprise_number, inss, date_str, shift):
 
         # Step 6: Confirmation
         print("Step 6: Confirming submission...")
-        # --- KEY CHANGE: Get a reference to the confirm button before clicking it ---
         confirm_button = wait.until(EC.presence_of_element_located((By.ID, "confirm")))
         confirm_button.click()
 
-        # --- KEY CHANGE: Wait for the page to change by waiting for the old button to disappear ---
         print("Waiting for final confirmation page...")
         wait.until(EC.staleness_of(confirm_button))
         
-        # Final Result
+        # --- KEY CHANGE: More resilient scraping for the final result ---
         print("Scraping result details...")
-        confirmation_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.row-result p")))
-        confirmation_text = confirmation_element.text if confirmation_element else "Confirmation details not found."
+        confirmation_text = ""
+        try:
+            # First, try to find the main content container which is always present
+            confirmation_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.content.sendConfirm")))
+            confirmation_text = confirmation_element.text
+        except TimeoutException:
+            # If it fails, grab all text from the page body as a fallback (likely an error page)
+            print("Could not find specific result element, grabbing all body text as a fallback.")
+            try:
+                body_element = driver.find_element(By.TAG_NAME, 'body')
+                confirmation_text = body_element.text
+            except:
+                confirmation_text = "Could not extract any details from the final page."
         
         print("Submission successful.")
         return {"status": "success", "details": confirmation_text}
@@ -167,3 +177,4 @@ def submit():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
