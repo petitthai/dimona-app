@@ -112,7 +112,7 @@ def send_dimona(enterprise_number, inss, date_str, shift):
 
         # Step 6: Confirmation
         print("Step 6: Confirming submission...")
-        wait.until(EC.url_contains("Step4SummaryFormAction.do"))
+        # wait.until(EC.url_contains("Step4SummaryFormAction.do"))
         wait.until(EC.presence_of_element_located((By.ID, "confirm"))).click()
 
         # Final Result
