@@ -117,7 +117,7 @@ def send_dimona(enterprise_number, inss, date_str, shift):
 
         # Final Result
         print("Waiting for final confirmation page...")
-        wait.until(EC.url_contains("DimonaResultPage"))
+        # wait.until(EC.url_contains("DimonaResultPage"))
         
         print("Scraping result details...")
         confirmation_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.row-result p")))
